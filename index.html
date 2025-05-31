@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My Photo Album</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        color: #333;
+      }
+
+      .container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+
+      .header {
+        text-align: center;
+        margin-bottom: 40px;
+        color: white;
+      }
+
+      .header h1 {
+        font-size: 3.5rem;
+        margin-bottom: 10px;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        font-weight: 300;
+      }
+
+      .header p {
+        font-size: 1.2rem;
+        opacity: 0.9;
+      }
+
+      .upload-section {
+        background: rgba(255, 255, 255, 0.95);
+        padding: 30px;
+        border-radius: 20px;
+        margin-bottom: 30px;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+      }
+
+      .upload-section h2 {
+        margin-bottom: 25px;
+        color: #444;
+        font-weight: 400;
+      }
+
+      .upload-form {
+        display: grid;
+        grid-template-columns: 1fr 1fr 200px 150px;
+        gap: 20px;
+        align-items: end;
+      }
+
+      .form-group {
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 20px;
+      }
+
+      .form-group:last-child {
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 20px;
+      }
+
+      .form-group label {
+        margin-bottom: 8px;
+        font-weight: 600;
+        color: #555;
+        font-size: 0.9rem;
+      }
+
+      .form-group input,
+      .form-group textarea {
+        padding: 12px 16px;
+        border: 2px solid #e1e5e9;
+        border-radius: 10px;
+        font-size: 16px;
+        transition: all 0.3s ease;
+        font-family: inherit;
+      }
+
+      .form-group input:focus,
+      .form-group textarea:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      }
+
+      .file-input-wrapper {
+        position: relative;
+        display: block;
+        width: 100%;
+        cursor: pointer;
+      }
+
+      .file-input-wrapper input[type="file"] {
+        position: absolute;
+        top: 0;
+        left: 0;
+        opacity: 0;
+        width: 100%;
+        height: 100%;
+        cursor: pointer;
+        z-index: 2;
+      }
+
+      .file-label {
+        display: block;
+        padding: 12px 20px;
+        background: linear-gradient(45deg, #667eea, #764ba2);
+        color: white;
+        border-radius: 10px;
+        text-align: center;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        outline: none;
+      }
+
+      .file-input-wrapper:hover .file-label {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+      }
+
+      .message-container {
+        margin: 20px 0;
+      }
+
+      .error,
+      .success {
+        padding: 15px 20px;
+        border-radius: 10px;
+        margin-bottom: 15px;
+        font-weight: 500;
+        text-align: center;
+        animation: slideIn 0.3s ease;
+      }
+
+      .error {
+        background: linear-gradient(45deg, #ff6b6b, #ee5253);
+        color: white;
+      }
+
+      .success {
+        background: linear-gradient(45deg, #20bf6b, #0fb9b1);
+        color: white;
+      }
+
+      @keyframes slideIn {
+        from {
+          opacity: 0;
+          transform: translateY(-10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .upload-progress {
+        margin-top: 20px;
+        background: #f1f3f9;
+        height: 6px;
+        border-radius: 3px;
+        overflow: hidden;
+        display: none;
+      }
+
+      .upload-progress-bar {
+        height: 100%;
+        background: linear-gradient(45deg, #667eea, #764ba2);
+        border-radius: 3px;
+        width: 0%;
+        transition: width 0.3s ease;
+      }
+
+      .search-section {
+        background: rgba(255, 255, 255, 0.95);
+        padding: 25px;
+        border-radius: 20px;
+        margin-bottom: 30px;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+      }
+
+      .search-box {
+        width: 100%;
+        padding: 18px 25px;
+        border: 2px solid #e1e5e9;
+        border-radius: 50px;
+        font-size: 16px;
+        transition: all 0.3s ease;
+        background: white;
+      }
+
+      .search-box:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      }
+
+      .stats {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin: 20px 0;
+        color: white;
+        font-size: 1.1rem;
+      }
+
+      .gallery {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 25px;
+        padding: 20px 0;
+      }
+
+      .photo-card {
+        background: white;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        transition: all 0.4s ease;
+        cursor: pointer;
+        position: relative;
+      }
+
+      .photo-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.2);
+      }
+
+      .photo-card img {
+        width: 100%;
+        height: 260px;
+        object-fit: cover;
+        transition: transform 0.4s ease;
+      }
+
+      .photo-card:hover img {
+        transform: scale(1.05);
+      }
+
+      .photo-info {
+        padding: 25px;
+      }
+
+      .photo-title {
+        font-size: 1.3rem;
+        font-weight: 600;
+        margin-bottom: 10px;
+        color: #333;
+      }
+
+      .photo-description {
+        color: #666;
+        margin-bottom: 15px;
+        line-height: 1.5;
+      }
+
+      .photo-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 15px;
+        padding-top: 15px;
+        border-top: 1px solid #f0f0f0;
+      }
+
+      .photo-date {
+        color: #999;
+        font-size: 0.9rem;
+      }
+
+      .delete-btn {
+        background: linear-gradient(45deg, #e74c3c, #c0392b);
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 20px;
+        cursor: pointer;
+        font-size: 12px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+      }
+
+      .delete-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(231, 76, 60, 0.4);
+      }
+
+      .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.95);
+        backdrop-filter: blur(10px);
+      }
+
+      .modal-content {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        max-width: 90%;
+        max-height: 90%;
+        text-align: center;
+        animation: modalAppear 0.3s ease;
+      }
+
+      @keyframes modalAppear {
+        from {
+          opacity: 0;
+          transform: translate(-50%, -50%) scale(0.8);
+        }
+        to {
+          opacity: 1;
+          transform: translate(-50%, -50%) scale(1);
+        }
+      }
+
+      .modal-content img {
+        max-width: 100%;
+        max-height: 80vh;
+        border-radius: 15px;
+        box-shadow: 0 25px 80px rgba(0, 0, 0, 0.3);
+      }
+
+      .modal-info {
+        background: white;
+        padding: 25px;
+        border-radius: 0 0 15px 15px;
+        text-align: left;
+      }
+
+      .close {
+        color: white;
+        font-size: 35px;
+        font-weight: bold;
+        cursor: pointer;
+        position: absolute;
+        top: 20px;
+        right: 30px;
+        z-index: 1001;
+        width: 50px;
+        height: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        background: rgba(0, 0, 0, 0.5);
+        transition: all 0.3s ease;
+      }
+
+      .close:hover {
+        background: rgba(0, 0, 0, 0.8);
+        transform: scale(1.1);
+      }
+
+      .loading {
+        text-align: center;
+        padding: 60px;
+        color: white;
+        font-size: 1.3rem;
+      }
+      .upload-btn {
+        display: block;
+        width: 100%;
+        background: linear-gradient(45deg, #667eea, #764ba2);
+        color: white;
+        padding: 12px 20px;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        font-size: 16px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        text-align: center;
+        outline: none;
+      }
+
+      .upload-btn:focus {
+        outline: none;
+      }
+
+      .upload-btn:hover,
+      .upload-btn:focus {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+      }
+
+      .upload-btn:active {
+        transform: translateY(0);
+        box-shadow: none;
+      }
+
+      @media (max-width: 1024px) {
+        .upload-form {
+          grid-template-columns: 1fr 1fr;
+          gap: 15px;
+        }
+
+        .gallery {
+          grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+          gap: 20px;
+        }
+      }
+
+      @media (max-width: 768px) {
+        .upload-form {
+          grid-template-columns: 1fr;
+        }
+
+        .header h1 {
+          font-size: 2.5rem;
+        }
+
+        .gallery {
+          grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+          gap: 15px;
+        }
+
+        .stats {
+          flex-direction: column;
+          gap: 10px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>📸 My Photo Album</h1>
+        <p>Capture, store, and cherish your precious memories</p>
+      </div>
+
+      <div class="upload-section">
+        <h2>Upload New Photo</h2>
+        <form
+          class="upload-form"
+          id="uploadForm"
+          enctype="multipart/form-data"
+          method="post"
+        >
+          <div class="form-group">
+            <label for="title">Photo Title *</label>
+            <input
+              type="text"
+              id="title"
+              name="title"
+              required
+              placeholder="Enter photo title"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="description">Description</label>
+            <textarea
+              id="description"
+              name="description"
+              rows="3"
+              placeholder="Describe your photo..."
+            ></textarea>
+          </div>
+
+          <div class="form-group">
+            <label for="photo">Select Photo *</label>
+            <div class="file-input-wrapper">
+              <input
+                type="file"
+                id="photo"
+                name="photo"
+                accept="image/*"
+                required
+              />
+              <span class="file-label">Choose File</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <button type="submit" class="upload-btn" id="uploadBtn">
+              <span id="uploadText">Upload Photo</span>
+            </button>
+          </div>
+        </form>
+
+        <div id="message" class="message-container"></div>
+
+        <div class="upload-progress" id="uploadProgress">
+          <div class="upload-progress-bar" id="uploadProgressBar"></div>
+        </div>
+      </div>
+
+      <div class="search-section">
+        <input
+          type="text"
+          class="search-box"
+          id="searchBox"
+          placeholder="🔍 Search photos by title or description..."
+        />
+      </div>
+
+      <div class="stats">
+        <span id="photoCount">Loading photos...</span>
+        <span id="lastUpdated"></span>
+      </div>
+
+      <div id="message"></div>
+
+      <div class="gallery" id="gallery">
+        <div class="loading">Loading your beautiful photos...</div>
+      </div>
+    </div>
+
+    <!-- Modal for full-size image view -->
+    <div id="photoModal" class="modal">
+      <span class="close">&times;</span>
+      <div class="modal-content">
+        <img id="modalImage" src="" alt="" />
+        <div class="modal-info">
+          <h3 id="modalTitle"></h3>
+          <p id="modalDescription"></p>
+          <p id="modalDate"></p>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Initialize variables
+      let photos = [];
+      let filteredPhotos = [];
+
+      // DOM elements
+      const form = document.getElementById("uploadForm");
+      const titleInput = document.getElementById("title");
+      const photoInput = document.getElementById("photo");
+      const descriptionInput = document.getElementById("description");
+      const uploadBtn = document.getElementById("uploadBtn");
+      const uploadText = document.getElementById("uploadText");
+      const messageContainer = document.getElementById("message");
+      const uploadProgress = document.getElementById("uploadProgress");
+      const uploadProgressBar = document.getElementById("uploadProgressBar");
+      const gallery = document.getElementById("gallery");
+      const searchBox = document.getElementById("searchBox");
+      const photoCount = document.getElementById("photoCount");
+      const lastUpdated = document.getElementById("lastUpdated");
+      const modal = document.getElementById("photoModal");
+      const modalImage = document.getElementById("modalImage");
+      const modalTitle = document.getElementById("modalTitle");
+      const modalDescription = document.getElementById("modalDescription");
+      const modalDate = document.getElementById("modalDate");
+      const closeModal = document.getElementsByClassName("close")[0];
+
+      // Initialize the application
+      document.addEventListener("DOMContentLoaded", function () {
+        initializeFormHandlers();
+        loadPhotos();
+        setupEventListeners();
+        updateLastUpdated();
+      });
+
+      function initializeFormHandlers() {
+        if (!form || !titleInput || !photoInput || !descriptionInput) {
+          console.error("Required form elements not found");
+          showMessage(
+            "Error: Form elements not found. Please refresh the page.",
+            "error"
+          );
+          return;
+        }
+
+        // File input change handler
+        photoInput.addEventListener("change", function (e) {
+          const fileLabel = this.parentElement.querySelector(".file-label");
+          if (fileLabel && this.files && this.files[0]) {
+            const fileName = this.files[0].name;
+            fileLabel.textContent =
+              fileName.length > 20
+                ? fileName.substring(0, 20) + "..."
+                : fileName;
+          }
+        });
+
+        // Form submission handler
+        form.addEventListener("submit", async function (e) {
+          e.preventDefault();
+
+          // Validate inputs
+          if (!titleInput.value.trim()) {
+            showMessage("Please enter a title", "error");
+            return;
+          }
+
+          if (!photoInput.files || photoInput.files.length === 0) {
+            showMessage("Please select a photo", "error");
+            return;
+          }
+
+          const photo = photoInput.files[0];
+
+          // Validate file type
+          const allowedTypes = [
+            "image/jpeg",
+            "image/png",
+            "image/gif",
+            "image/webp",
+          ];
+          if (!allowedTypes.includes(photo.type)) {
+            showMessage(
+              "Please select a valid image file (JPEG, PNG, GIF, or WebP)",
+              "error"
+            );
+            return;
+          }
+
+          // Validate file size (5MB max)
+          const maxSize = 5 * 1024 * 1024;
+          if (photo.size > maxSize) {
+            showMessage("File size must be less than 5MB", "error");
+            return;
+          }
+
+          // Prepare form data
+          const formData = new FormData();
+          formData.append("title", titleInput.value.trim());
+          formData.append("description", descriptionInput.value.trim());
+          formData.append("photo", photo);
+
+          // Update UI for upload
+          uploadBtn.disabled = true;
+          uploadText.textContent = "Uploading...";
+          uploadProgress.style.display = "block";
+          uploadProgressBar.style.width = "0%";
+
+          try {
+            const response = await fetch("api/upload_photo.php", {
+              method: "POST",
+              body: formData,
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+              throw new Error(
+                data.error || `HTTP error! status: ${response.status}`
+              );
+            }
+
+            if (data.success) {
+              // Reload photos after successful upload
+              await loadPhotos();
+
+              // Reset form
+              form.reset();
+              const fileLabel = document.querySelector(".file-label");
+              if (fileLabel) {
+                fileLabel.textContent = "Choose File";
+              }
+              showMessage("Photo uploaded successfully!", "success");
+            } else {
+              throw new Error(data.error || "Upload failed");
+            }
+          } catch (error) {
+            console.error("Error uploading photo:", error);
+            showMessage("Error uploading photo: " + error.message, "error");
+          } finally {
+            uploadBtn.disabled = false;
+            uploadText.textContent = "Upload Photo";
+            uploadProgress.style.display = "none";
+            uploadProgressBar.style.width = "0%";
+          }
+        });
+      }
+
+      function setupEventListeners() {
+        // Search functionality with debouncing
+        let searchTimeout;
+        searchBox.addEventListener("input", function () {
+          clearTimeout(searchTimeout);
+          searchTimeout = setTimeout(() => {
+            const searchTerm = this.value.toLowerCase().trim();
+            if (searchTerm === "") {
+              filteredPhotos = photos;
+            } else {
+              filteredPhotos = photos.filter(
+                (photo) =>
+                  photo.title.toLowerCase().includes(searchTerm) ||
+                  photo.description.toLowerCase().includes(searchTerm)
+              );
+            }
+            displayPhotos();
+            updatePhotoCount();
+          }, 300);
+        });
+
+        // Modal functionality
+        closeModal.addEventListener("click", function () {
+          modal.style.display = "none";
+        });
+
+        window.addEventListener("click", function (e) {
+          if (e.target === modal) {
+            modal.style.display = "none";
+          }
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener("keydown", function (e) {
+          if (e.key === "Escape" && modal.style.display === "block") {
+            modal.style.display = "none";
+          }
+        });
+      }
+
+      async function loadPhotos() {
+        try {
+          const response = await fetch("api/get_photos.php");
+          const data = await response.json();
+
+          if (Array.isArray(data)) {
+            photos = data;
+            filteredPhotos = photos;
+            displayPhotos();
+            updatePhotoCount();
+          } else if (data.success && Array.isArray(data.photos)) {
+            photos = data.photos;
+            filteredPhotos = photos;
+            displayPhotos();
+            updatePhotoCount();
+          } else {
+            throw new Error("Invalid response format");
+          }
+        } catch (error) {
+          console.error("Error loading photos:", error);
+          showMessage("Error loading photos: " + error.message, "error");
+        }
+      }
+
+      function displayPhotos() {
+        if (filteredPhotos.length === 0) {
+          const message =
+            photos.length === 0
+              ? "No photos uploaded yet. Start by uploading your first photo!"
+              : "No photos match your search criteria.";
+          gallery.innerHTML = `<div class="loading">${message}</div>`;
+          return;
+        }
+
+        gallery.innerHTML = filteredPhotos
+          .map(
+            (photo) => `
+                <div class="photo-card" onclick="openModal(${
+                  photo.id
+                })" data-photo-id="${photo.id}">
+                    <img src="${photo.filename}" alt="${
+              photo.title
+            }" loading="lazy" 
+                         onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgZmlsbD0iI2Y4ZjlmYSIvPjx0ZXh0IHg9IjIwMCIgeT0iMTUwIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiPkltYWdlIG5vdCBmb3VuZDwvdGV4dD48L3N2Zz4='">
+                    <div class="photo-info">
+                        <h3 class="photo-title">${photo.title}</h3>
+                        <p class="photo-description">${
+                          photo.description || "No description provided"
+                        }</p>
+                        <div class="photo-meta">
+                            <span class="photo-date">${new Date(
+                              photo.upload_date
+                            ).toLocaleDateString()}</span>
+                            <button class="delete-btn" onclick="deletePhoto(${
+                              photo.id
+                            }, event)">Delete</button>
+                        </div>
+                    </div>
+                </div>
+            `
+          )
+          .join("");
+      }
+
+      function openModal(photoId) {
+        const photo = photos.find((p) => p.id === photoId);
+        if (!photo) return;
+
+        modalImage.src = photo.filename;
+        modalTitle.textContent = photo.title;
+        modalDescription.textContent =
+          photo.description || "No description provided";
+        modalDate.textContent = `Uploaded on ${new Date(
+          photo.upload_date
+        ).toLocaleDateString()}`;
+        modal.style.display = "block";
+      }
+
+      async function deletePhoto(id) {
+        if (!confirm("Are you sure you want to delete this photo?")) {
+          return;
+        }
+
+        try {
+          const response = await fetch("api/delete_photo.php", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ id: id }),
+          });
+
+          const data = await response.json();
+
+          if (!response.ok) {
+            throw new Error(
+              data.error || `HTTP error! status: ${response.status}`
+            );
+          }
+
+          if (data.success) {
+            await loadPhotos();
+            showMessage("Photo deleted successfully!", "success");
+          } else {
+            throw new Error(data.error || "Delete failed");
+          }
+        } catch (error) {
+          console.error("Error deleting photo:", error);
+          showMessage("Error deleting photo: " + error.message, "error");
+        }
+      }
+
+      function showMessage(text, type) {
+        if (!messageContainer) return;
+
+        messageContainer.innerHTML = `<div class="${type}">${text}</div>`;
+        setTimeout(() => {
+          messageContainer.innerHTML = "";
+        }, 5000);
+      }
+
+      function updatePhotoCount() {
+        const totalPhotos = photos.length;
+        const filteredCount = filteredPhotos.length;
+        const searchTerm = searchBox.value.trim();
+
+        if (searchTerm && filteredCount !== totalPhotos) {
+          photoCount.textContent = `Showing ${filteredCount} of ${totalPhotos} photos`;
+        } else {
+          photoCount.textContent = `Total photos: ${totalPhotos}`;
+        }
+      }
+
+      function updateLastUpdated() {
+        if (photos.length > 0) {
+          const lastPhoto = photos.reduce((latest, photo) => {
+            return new Date(photo.upload_date) > new Date(latest.upload_date)
+              ? photo
+              : latest;
+          });
+          lastUpdated.textContent = `Last updated: ${new Date(
+            lastPhoto.upload_date
+          ).toLocaleString()}`;
+        } else {
+          lastUpdated.textContent = "";
+        }
+      }
+
+      async function searchPhotos(searchTerm) {
+        try {
+          const response = await fetch(
+            `api/search_photos.php?q=${encodeURIComponent(searchTerm)}`
+          );
+          const data = await response.json();
+
+          if (data.success && Array.isArray(data.photos)) {
+            filteredPhotos = data.photos;
+            displayPhotos();
+            updatePhotoCount();
+          } else {
+            throw new Error("Invalid response format");
+          }
+        } catch (error) {
+          console.error("Error searching photos:", error);
+          showMessage("Error searching photos: " + error.message, "error");
+        }
+      }
+    </script>
+  </body>
+</html>
