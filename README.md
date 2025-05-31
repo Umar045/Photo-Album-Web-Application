@@ -30,8 +30,7 @@ Email: m.umarfarooq0045@gmail.com
 1. Clone the repository:
 
 ```bash
-git clone [your-repo-url]
-```
+git clone https://github.com/Umar045/Photo-Album-Web-Application.git
 
 2. Create a MySQL database named 'photo_album'
 
